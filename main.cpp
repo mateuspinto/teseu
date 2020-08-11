@@ -5,18 +5,34 @@
 
 int main(int argc, char const *argv[])
 {
-    FILE *mappingFile = fopen("benchmarks/sbcci/grid/verilog_chebyshev.out", "r");
-    FILE *routtingFile = fopen("benchmarks/sbcci/edge_list/chebyshev/chebyshev_0.in", "r");
+    CGRA *cgra = NULL;
+    CGRARoutingHeuristic *heuristic = NULL;
+    FILE *mappingFile = NULL;
+    FILE *routtingFile = NULL;
+    unsigned int gridLineSize;
 
-    unsigned int gridLineSize = gridLineSizeRetriever("benchmarks/sbcci/grid/verilog_chebyshev.out");
+    if (argc == 3)
+    {
+        mappingFile = fopen(argv[1], "r");
+        routtingFile = fopen(argv[2], "r");
 
-    fscanf(mappingFile, "\n");
+        gridLineSize = gridLineSizeRetriever(argv[1]);
 
-    CGRA slash = CGRA(gridLineSize, 1, 2, mappingFile);
-    CGRARoutingHeuristic heuristic = CGRARoutingHeuristic(&slash, routtingFile);
+        fscanf(mappingFile, "\n");
+        cgra = new CGRA(gridLineSize, 1, 2, mappingFile);
+        heuristic = new CGRARoutingHeuristic(cgra, routtingFile);
 
-    fclose(mappingFile);
-    fclose(routtingFile);
+        heuristic->info();
 
-    return 0;
+        fclose(mappingFile);
+        fclose(routtingFile);
+
+        return 0;
+    }
+    else
+    {
+        std::cout << "You must input the mapping file and the routing file in that order!" << std::endl;
+        std::cout << "Error. I give up. <3" << std::endl;
+        exit(1);
+    }
 }

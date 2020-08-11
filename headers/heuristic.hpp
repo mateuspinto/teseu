@@ -9,9 +9,11 @@ class GraphEdge
 private:
     unsigned int source;
     unsigned int destination;
+    unsigned int routedOrder;
+    bool trivial;
 
 public:
-    GraphEdge(unsigned int source, unsigned int destination);
+    GraphEdge(unsigned int source, unsigned int destination, bool trivial);
     ~GraphEdge();
 
     void info();
@@ -19,10 +21,12 @@ public:
     unsigned int getDestination();
 };
 
-GraphEdge::GraphEdge(unsigned int source, unsigned int destination)
+GraphEdge::GraphEdge(unsigned int source, unsigned int destination, bool trivial)
 {
     this->source = source;
     this->destination = destination;
+    this->trivial = trivial;
+    this->routedOrder = 0;
 }
 
 GraphEdge::~GraphEdge()
@@ -31,7 +35,14 @@ GraphEdge::~GraphEdge()
 
 void GraphEdge::info()
 {
-    std::cout << this->source << " -> " << this->destination;
+    if (this->trivial)
+    {
+        std::cout << "(Trivial=1 R=" << this->routedOrder << ") " << this->source << " -> " << this->destination << std::endl;
+    }
+    else
+    {
+        std::cout << "(Trivial=0 R=" << this->routedOrder << ") " << this->source << " -> " << this->destination << std::endl;
+    }
 }
 
 unsigned int GraphEdge::getSource()
@@ -66,6 +77,7 @@ CGRARoutingHeuristic::CGRARoutingHeuristic(CGRA *cgra, FILE *routingFile)
 
     unsigned int gridSize = square(this->gridLineSize);
     unsigned int dump, inputsQuantity, swapSource, swapDestination;
+    bool isTrivial;
 
     if ((this->grid = (unsigned int *)malloc(gridSize * sizeof(unsigned int))) == NULL)
     {
@@ -93,11 +105,24 @@ CGRARoutingHeuristic::CGRARoutingHeuristic(CGRA *cgra, FILE *routingFile)
         swapSource = cgra->absPosition(swapSource);
         swapDestination = cgra->absPosition(swapDestination);
 
-        std::cout << "[DEBUG] " << cgra->xPosition(swapSource) << "-" << cgra->yPosition(swapSource) << " " << cgra->xPosition(swapDestination) << "-" << cgra->yPosition(swapDestination)  << std::endl;
+        if ((abs((int)(cgra->xPosition(swapSource) - cgra->xPosition(swapDestination))) + abs(((int)(cgra->yPosition(swapSource) - cgra->yPosition(swapDestination))))) <= 1)
+        {
+            isTrivial = true;
+        }
+        else
+        {
+            isTrivial = false;
 
-        this->inputs[i] = GraphEdge(swapSource, swapDestination);
-        
-        //For loop
+            for (size_t j = min(cgra->yPosition(swapSource), cgra->yPosition(swapDestination)); j <= max(cgra->yPosition(swapSource), cgra->yPosition(swapDestination)); j++)
+            {
+                for (size_t i = min(cgra->xPosition(swapSource), cgra->xPosition(swapDestination)); i <= max(cgra->xPosition(swapSource), cgra->xPosition(swapDestination)); i++)
+                {
+                    this->grid[cgra->fromXYPosition(i, j)]++;
+                }
+            }
+        }
+
+        this->inputs[i] = GraphEdge(swapSource, swapDestination, isTrivial);
     }
 }
 
@@ -124,7 +149,6 @@ void CGRARoutingHeuristic::info()
     for (size_t i = 0; i < this->inputsQuantity; i++)
     {
         this->inputs[i].info();
-        std::cout << std::endl;
     }
 }
 

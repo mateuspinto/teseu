@@ -17,7 +17,31 @@ unsigned int floorSqrt(unsigned int x)
     return i - 1;
 }
 
-unsigned int gridLineSizeRetriever(char *mappingFileName)
+unsigned int min(unsigned int a, unsigned int b)
+{
+    if (a < b)
+    {
+        return a;
+    }
+    else
+    {
+        return b;
+    }
+}
+
+unsigned int max(unsigned int a, unsigned int b)
+{
+    if (a > b)
+    {
+        return a;
+    }
+    else
+    {
+        return b;
+    }
+}
+
+unsigned int gridLineSizeRetriever(const char *mappingFileName)
 {
     FILE *mappingFile = fopen(mappingFileName, "r");
     char swap;
