@@ -22,7 +22,7 @@ int main(int argc, char const *argv[])
         cgra = new CGRA(gridLineSize, 1, 2, mappingFile);
         heuristic = new CGRARoutingHeuristic(cgra, routtingFile);
 
-        heuristic->info();
+        heuristic->infoXY(cgra);
 
         fclose(mappingFile);
         fclose(routtingFile);

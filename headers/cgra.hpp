@@ -87,7 +87,7 @@ public:
 
     unsigned int getGridLineSize();
 
-    unsigned int absPosition(unsigned int x);
+    unsigned int mappingPosition(unsigned int x);
     unsigned int xPosition(unsigned int x);
     unsigned int yPosition(unsigned int x);
     unsigned int xRelativePosition(unsigned int x);
@@ -137,19 +137,9 @@ CGRA::~CGRA()
     free((void *)this->mapping);
 }
 
-unsigned int CGRA::absPosition(unsigned int x)
+unsigned int CGRA::mappingPosition(unsigned int x)
 {
     return mapping[x];
-}
-
-unsigned int CGRA::xPosition(unsigned int x)
-{
-    return this->absPosition(x) % this->gridLineSize;
-}
-
-unsigned int CGRA::yPosition(unsigned int x)
-{
-    return this->absPosition(x) / this->gridLineSize;
 }
 
 unsigned int CGRA::xRelativePosition(unsigned int x)

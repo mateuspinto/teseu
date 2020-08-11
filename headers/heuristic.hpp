@@ -17,6 +17,7 @@ public:
     ~GraphEdge();
 
     void info();
+    void infoXY(unsigned int gridLineSize);
     unsigned int getSource();
     unsigned int getDestination();
 };
@@ -45,6 +46,18 @@ void GraphEdge::info()
     }
 }
 
+void GraphEdge::infoXY(unsigned int gridLineSize)
+{
+    if (this->trivial)
+    {
+        std::cout << "(Trivial=1 R=" << this->routedOrder << ") " << this->source % gridLineSize << "," << this->source / gridLineSize << " -> " << this->destination % gridLineSize << "," << this->destination / gridLineSize << std::endl;
+    }
+    else
+    {
+        std::cout << "(Trivial=0 R=" << this->routedOrder << ") " << this->source % gridLineSize << "," << this->source / gridLineSize << " -> " << this->destination % gridLineSize << "," << this->destination / gridLineSize << std::endl;
+    }
+}
+
 unsigned int GraphEdge::getSource()
 {
     return this->source;
@@ -69,6 +82,7 @@ public:
     ~CGRARoutingHeuristic();
 
     void info();
+    void infoXY(CGRA *cgra);
 };
 
 CGRARoutingHeuristic::CGRARoutingHeuristic(CGRA *cgra, FILE *routingFile)
@@ -102,10 +116,12 @@ CGRARoutingHeuristic::CGRARoutingHeuristic(CGRA *cgra, FILE *routingFile)
     for (size_t i = 0; i < inputsQuantity; i++)
     {
         fscanf(routingFile, "%u %u\n", &swapSource, &swapDestination);
-        swapSource = cgra->absPosition(swapSource);
-        swapDestination = cgra->absPosition(swapDestination);
 
-        if ((abs((int)(cgra->xPosition(swapSource) - cgra->xPosition(swapDestination))) + abs(((int)(cgra->yPosition(swapSource) - cgra->yPosition(swapDestination))))) <= 1)
+        // Changing to placement position
+        swapSource = cgra->mappingPosition(swapSource);
+        swapDestination = cgra->mappingPosition(swapDestination);
+
+        if ((abs((int)(cgra->xRelativePosition(swapSource) - cgra->xRelativePosition(swapDestination))) + abs(((int)(cgra->yRelativePosition(swapSource) - cgra->yRelativePosition(swapDestination))))) <= 1)
         {
             isTrivial = true;
         }
@@ -113,9 +129,9 @@ CGRARoutingHeuristic::CGRARoutingHeuristic(CGRA *cgra, FILE *routingFile)
         {
             isTrivial = false;
 
-            for (size_t j = min(cgra->yPosition(swapSource), cgra->yPosition(swapDestination)); j <= max(cgra->yPosition(swapSource), cgra->yPosition(swapDestination)); j++)
+            for (size_t j = min(cgra->yRelativePosition(swapSource), cgra->yRelativePosition(swapDestination)); j <= max(cgra->yRelativePosition(swapSource), cgra->yRelativePosition(swapDestination)); j++)
             {
-                for (size_t i = min(cgra->xPosition(swapSource), cgra->xPosition(swapDestination)); i <= max(cgra->xPosition(swapSource), cgra->xPosition(swapDestination)); i++)
+                for (size_t i = min(cgra->xRelativePosition(swapSource), cgra->xRelativePosition(swapDestination)); i <= max(cgra->xRelativePosition(swapSource), cgra->xRelativePosition(swapDestination)); i++)
                 {
                     this->grid[cgra->fromXYPosition(i, j)]++;
                 }
@@ -149,6 +165,26 @@ void CGRARoutingHeuristic::info()
     for (size_t i = 0; i < this->inputsQuantity; i++)
     {
         this->inputs[i].info();
+    }
+}
+
+void CGRARoutingHeuristic::infoXY(CGRA *cgra)
+{
+    std::cout << "[Grid]" << std::endl;
+    for (size_t j = 0; j < this->gridLineSize; j++)
+    {
+        for (size_t i = 0; i < this->gridLineSize; i++)
+        {
+            std::cout << this->grid[j * gridLineSize + i] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+
+    std::cout << "[Input Edges]" << std::endl;
+    for (size_t i = 0; i < this->inputsQuantity; i++)
+    {
+        this->inputs[i].infoXY(cgra->getGridLineSize());
     }
 }
 
